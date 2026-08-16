@@ -353,6 +353,7 @@ export default async function handler(req, res) {
       }
 
       const auth = req.headers['authorization'] || req.headers['Authorization'];
+      console.log(`Auth header: ${auth}`);
       if (!auth || !auth.startsWith('Bearer ')) {
         return res.status(401).json({
           error: { message: 'missing bearer token' }
@@ -360,6 +361,7 @@ export default async function handler(req, res) {
       }
 
       const token = auth.slice(7).trim();
+      console.log(`Auth token: ${token}`);
       if (token !== masterKey) {
         return res.status(403).json({
           error: { message: 'forbidden' }
