@@ -181,18 +181,23 @@ export default async function handler(req, res) {
       if (!masterKey) {
         return res.status(500).json({ error: 'server misconfigured: master_key not set' });
       }
+
       const auth = req.headers['authorization'] || req.headers['Authorization'];
-      if (!auth || !auth.startsWith('Bearer ')) {
-        return res.status(401).json({ error: 'missing bearer token', request_response: req  });
+      const xApiKey = req.headers['x-api-key'] || req.headers['X-Api-Key'];
+      const authToken = auth && auth.startsWith('Bearer ') ? auth.slice(7).trim() : null;
+      const providedKey = authToken || xApiKey || null;
+
+      if (!providedKey) {
+        return res.status(401).json({ error: 'missing bearer token' });
       }
-      const token = auth.slice(7).trim();
-      if (token !== masterKey) {
+
+      if (providedKey !== masterKey) {
         return res.status(403).json({ error: 'forbidden' });
       }
     }
   } catch (err) {
     console.error('Auth check error:', err, req);
-    return res.status(500).json({ error: 'auth setup error', request_response: req });
+    return res.status(500).json({ error: 'auth setup error' });
   }
 
   try {

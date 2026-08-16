@@ -356,16 +356,20 @@ export default async function handler(req, res) {
       }
 
       const auth = req.headers['authorization'] || req.headers['Authorization'];
+      const xApiKey = req.headers['x-api-key'] || req.headers['X-Api-Key'];
+      const authToken = auth && auth.startsWith('Bearer ') ? auth.slice(7).trim() : null;
+      const providedKey = authToken || xApiKey || null;
+
       console.log(`Auth header: ${auth}`);
-      if (!auth || !auth.startsWith('Bearer ')) {
+      console.log(`X-API-Key header: ${xApiKey}`);
+
+      if (!providedKey) {
         return res.status(401).json({
-          error: { message: 'missing bearer token', request_response: req }
+          error: { message: 'missing bearer token' }
         });
       }
 
-      const token = auth.slice(7).trim();
-      console.log(`Auth token: ${token}`);
-      if (token !== masterKey) {
+      if (providedKey !== masterKey) {
         return res.status(403).json({
           error: { message: 'forbidden' }
         });
@@ -374,7 +378,7 @@ export default async function handler(req, res) {
   } catch (err) {
     console.error('Auth check error:', err, req);
     return res.status(500).json({
-      error: { message: 'auth setup error', request_response: req }
+      error: { message: 'auth setup error' }
     });
   }
 
