@@ -6,15 +6,22 @@ export default {
     description: 'Multi-provider LLM proxy with provider selection through model_name.'
   },
   servers: [{ url: '/' }],
+  security: [
+    {
+      bearerAuth: []
+    }
+  ],
   paths: {
     '/health': {
       get: {
         summary: 'Health check',
+        security: [],
         responses: { 200: { description: 'Proxy is available' } }
       }
     },
     '/pools': {
       get: {
+        security: [],
         summary: 'List provider pools',
         responses: { 200: { description: 'Configured pool names' } }
       }
@@ -71,6 +78,14 @@ export default {
     }
   },
   components: {
+    securitySchemes: {
+      bearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'Token',
+        description: 'Provide the master key as `Bearer <token>` for protected routes.'
+      }
+    },
     parameters: {
       ModelName: {
         name: 'model_name',
