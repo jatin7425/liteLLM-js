@@ -28,7 +28,7 @@ function resolveApiKey(maybeEnv) {
   if (!maybeEnv) return null;
   if (typeof maybeEnv !== 'string') return maybeEnv;
   if (maybeEnv.startsWith('os.environ/')) {
-    const varName = maybeEnv.split('/')[-1];
+    const varName = maybeEnv.replace(/^os\.environ\//, '');
     return process.env[varName] || null;
   }
   return maybeEnv;
