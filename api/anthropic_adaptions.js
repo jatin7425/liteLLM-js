@@ -195,11 +195,17 @@ function convertOpenAIToAnthropic(openaiResponse, model) {
   };
 }
 
-export function convertOpenAIStreamChunkToAnthropicEvents(chunkText, model, messageId) {
+export function convertOpenAIStreamChunkToAnthropicEvents(chunkText, model, messageId, state = {}) {
   const events = [];
   const rawText = typeof chunkText === 'string' ? chunkText : chunkText.toString();
   const lines = rawText.split('\n').map(line => line.trim()).filter(Boolean);
-  let emittedStart = false;
+  const streamState = {
+    emittedStart: false,
+    emittedContentStart: false,
+    emittedContentStop: false,
+    emittedMessageStop: false,
+    ...state
+  };
 
   for (const line of lines) {
     if (!line.startsWith('data:')) continue;
@@ -217,8 +223,8 @@ export function convertOpenAIStreamChunkToAnthropicEvents(chunkText, model, mess
     const choice = payload.choices?.[0];
     if (!choice) continue;
 
-    if (!emittedStart) {
-      emittedStart = true;
+    if (!streamState.emittedStart) {
+      streamState.emittedStart = true;
       events.push({
         event: 'message_start',
         data: {
@@ -242,6 +248,21 @@ export function convertOpenAIStreamChunkToAnthropicEvents(chunkText, model, mess
 
     const delta = choice.delta || {};
     if (typeof delta.content === 'string' && delta.content.length > 0) {
+      if (!streamState.emittedContentStart) {
+        streamState.emittedContentStart = true;
+        events.push({
+          event: 'content_block_start',
+          data: {
+            type: 'content_block_start',
+            index: 0,
+            content_block: {
+              type: 'text',
+              text: ''
+            }
+          }
+        });
+      }
+
       events.push({
         event: 'content_block_delta',
         data: {
@@ -257,22 +278,33 @@ export function convertOpenAIStreamChunkToAnthropicEvents(chunkText, model, mess
 
     if (choice.finish_reason) {
       const stopReason = choice.finish_reason === 'tool_calls' ? 'tool_use' : choice.finish_reason;
-      events.push({
-        event: 'message_delta',
-        data: {
-          type: 'message_delta',
-          delta: { stop_reason: stopReason },
-          usage: { output_tokens: 0 }
-        }
-      });
-      events.push({
-        event: 'message_stop',
-        data: { type: 'message_stop' }
-      });
+      if (streamState.emittedContentStart && !streamState.emittedContentStop) {
+        streamState.emittedContentStop = true;
+        events.push({
+          event: 'content_block_stop',
+          data: { type: 'content_block_stop', index: 0 }
+        });
+      }
+
+      if (!streamState.emittedMessageStop) {
+        streamState.emittedMessageStop = true;
+        events.push({
+          event: 'message_delta',
+          data: {
+            type: 'message_delta',
+            delta: { stop_reason: stopReason },
+            usage: { output_tokens: 0 }
+          }
+        });
+        events.push({
+          event: 'message_stop',
+          data: { type: 'message_stop' }
+        });
+      }
     }
   }
 
-  return events;
+  return { events, state: streamState };
 }
 
 async function forwardRequest(item, upstream, originalReq) {
@@ -325,7 +357,7 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader(
     'Access-Control-Allow-Headers',
-    'Content-Type, Authorization, X-Model-Name, Anthropic-Version'
+    'Content-Type, Authorization, X-API-Key, X-Model-Name, Anthropic-Version'
   );
   res.setHeader('Content-Type', 'application/json');
 
@@ -456,10 +488,11 @@ export default async function handler(req, res) {
 
               let sawMessageStop = false;
               const streamMessageId = `msg_${Date.now()}`;
+              const streamState = { emittedStart: false, emittedContentStart: false, emittedContentStop: false, emittedMessageStop: false };
 
               resp.data.on('data', chunk => {
-                const events = convertOpenAIStreamChunkToAnthropicEvents(chunk, modelName, streamMessageId);
-                for (const event of events) {
+                const result = convertOpenAIStreamChunkToAnthropicEvents(chunk, modelName, streamMessageId, streamState);
+                for (const event of result.events) {
                   if (event.event === 'message_stop') sawMessageStop = true;
                   res.write(`event: ${event.event}\n`);
                   res.write(`data: ${JSON.stringify(event.data)}\n\n`);
