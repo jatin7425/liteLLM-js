@@ -420,12 +420,20 @@ export default async function handler(req, res) {
         if (!pick) break;
 
         const { item } = pick;
-        tried.push({ apiBase: item.apiBase || null });
+        const upstreamBase = item.apiBase || inferApiBaseFromModel(item.params?.model) || null;
+        tried.push({ apiBase: upstreamBase });
 
         try {
-          const resp = await forwardRequest(item, item.apiBase || inferApiBaseFromModel(item.params?.model), req);
+          const resp = await forwardRequest(item, upstreamBase, req);
 
           if (resp.status >= 200 && resp.status < 500) {
+            const rawText = typeof resp.data === 'string' ? resp.data : resp.data?.toString?.() || '';
+            const parsed = rawText ? (() => { try { return JSON.parse(rawText); } catch { return null; } })() : null;
+
+            if (parsed && !parsed.choices && parsed.error) {
+              return res.status(resp.status).json({ error: parsed.error });
+            }
+
             // Handle streaming
             if (typeof resp.data?.pipe === 'function') {
               res.status(resp.status);
@@ -462,8 +470,8 @@ export default async function handler(req, res) {
             }
 
             // Non-streaming response
-            const parsed = JSON.parse(resp.data.toString());
-            const anthropicResp = convertOpenAIToAnthropic(parsed, modelName);
+            const parsedBody = parsed ?? JSON.parse(rawText || '{}');
+            const anthropicResp = convertOpenAIToAnthropic(parsedBody, modelName);
 
             return res.status(resp.status).json(anthropicResp);
           }
