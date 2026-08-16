@@ -156,7 +156,7 @@ function convertAnthropicToOpenAI(anthropicBody, model) {
     ...(tools ? { tools } : {}),  // Only include if present
     tool_choice: anthropicBody.tool_choice
   };
-}
+} 
 
 /**
  * Convert OpenAI response format back to Anthropic format
