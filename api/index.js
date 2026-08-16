@@ -176,7 +176,7 @@ export default async function handler(req, res) {
       cleanPath === '/v1/api/hello' ||
       cleanPath.startsWith('/docs') ||
       cleanPath.startsWith('/openai') ||
-      cleanPath === '/v1/models';
+      cleanPath === '/v1/models'; 
     if (!isAllowlisted) {
       if (!masterKey) {
         return res.status(500).json({ error: 'server misconfigured: master_key not set' });
