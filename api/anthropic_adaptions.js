@@ -374,7 +374,7 @@ async function forwardRequest(item, upstream, originalReq) {
       validateStatus: () => true
     });
 
-    console.log(`Forwarded request to ${url} with status ${resp}`);
+    console.log(`Forwarded request to ${url} with status`, resp.status, 'content-type', resp.headers['content-type'], 'isStream', typeof resp.data?.pipe === 'function');
 
     return resp;
   } catch (err) {
@@ -524,29 +524,113 @@ export default async function handler(req, res) {
               return res.status(resp.status).json({ error: parsed.error });
             }
 
-            // Handle streaming
+            // Handle upstream response
             if (typeof resp.data?.pipe === 'function') {
+
+              // IMPORTANT:
+              // A streamed Axios response can still have an HTTP error status
+              // such as 400, 413, 429, 500, etc.
+              if (resp.status < 200 || resp.status >= 300) {
+                let errorBody = '';
+
+                resp.data.on('data', chunk => {
+                  errorBody += chunk.toString();
+                });
+
+                resp.data.on('end', () => {
+                  console.error('Upstream error:', {
+                    status: resp.status,
+                    body: errorBody
+                  });
+
+                  let parsedError;
+
+                  try {
+                    parsedError = JSON.parse(errorBody);
+                  } catch {
+                    parsedError = {
+                      message: errorBody || `Upstream returned HTTP ${resp.status}`
+                    };
+                  }
+
+                  return res.status(resp.status).json({
+                    error: parsedError.error || parsedError
+                  });
+                });
+
+                resp.data.on('error', err => {
+                  console.error('Upstream error stream failed:', err.message);
+
+                  if (!res.headersSent) {
+                    res.status(502).json({
+                      error: {
+                        message: err.message
+                      }
+                    });
+                  } else {
+                    res.destroy(err);
+                  }
+                });
+
+                return;
+              }
+
+              // ==========================
+              // Successful streaming response
+              // ==========================
               res.status(resp.status);
               res.setHeader('Content-Type', 'text/event-stream');
               res.setHeader('Cache-Control', 'no-cache');
               res.setHeader('Connection', 'keep-alive');
+              res.setHeader('X-Accel-Buffering', 'no');
 
               let sawMessageStop = false;
               const streamMessageId = `msg_${Date.now()}`;
-              const streamState = { emittedStart: false, emittedContentStart: false, emittedContentStop: false, emittedMessageStop: false };
+              const streamState = {
+                emittedStart: false,
+                emittedContentStart: false,
+                emittedContentStop: false,
+                emittedMessageStop: false
+              };
 
               resp.data.on('data', chunk => {
-                const result = convertOpenAIStreamChunkToAnthropicEvents(chunk, modelName, streamMessageId, streamState);
-                for (const event of result.events) {
-                  if (event.event === 'message_stop') sawMessageStop = true;
-                  res.write(`event: ${event.event}\n`);
-                  res.write(`data: ${JSON.stringify(event.data)}\n\n`);
+                try {
+                  const result = convertOpenAIStreamChunkToAnthropicEvents(
+                    chunk,
+                    modelName,
+                    streamMessageId,
+                    streamState
+                  );
+                  for (const event of result.events) {
+                    if (event.event === 'message_stop') {
+                      sawMessageStop = true;
+                    }
+                    res.write(`event: ${event.event}\n`);
+                    res.write(`data: ${JSON.stringify(event.data)}\n\n`);
+                  }
+                } catch (err) {
+                  console.error(
+                    'Failed to convert upstream stream chunk:',
+                    err.message
+                  );
                 }
               });
 
               resp.data.on('error', err => {
-                console.error('Upstream stream failed:', err.message);
-                res.destroy(err);
+                console.error(
+                  'Upstream stream failed:',
+                  err.message
+                );
+
+                if (!res.headersSent) {
+                  res.status(502).json({
+                    error: {
+                      message: err.message
+                    }
+                  });
+                } else {
+                  res.destroy(err);
+                }
               });
 
               resp.data.on('end', () => {
