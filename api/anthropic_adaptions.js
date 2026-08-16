@@ -392,15 +392,15 @@ export default async function handler(req, res) {
 
     // === /v1/messages endpoint (Anthropic format) ===
     if (req.url?.startsWith('/v1/messages')) {
-      const modelName = req.body?.model;
+      const receivedModel = req.body?.model || req.query?.model || 'nvidia';
+      if (Object.keys(pools).includes(receivedModel)) {
+        let modelName = receivedModel;
+      } else {
+        let modelName = 'nvidia';
+      }
 
-      if (!modelName) {
-        return res.status(400).json({
-          error: {
-            type: 'invalid_request_error',
-            message: 'model field is required'
-          }
-        });
+      if (!req.body?.model && !req.query?.model) {
+        console.warn('No model provided for /v1/messages; defaulting to nvidia');
       }
 
       const pool = pools[modelName];
