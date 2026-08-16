@@ -199,13 +199,11 @@ export function convertOpenAIStreamChunkToAnthropicEvents(chunkText, model, mess
   const events = [];
   const rawText = typeof chunkText === 'string' ? chunkText : chunkText.toString();
   const lines = rawText.split('\n').map(line => line.trim()).filter(Boolean);
-  const streamState = {
-    emittedStart: false,
-    emittedContentStart: false,
-    emittedContentStop: false,
-    emittedMessageStop: false,
-    ...state
-  };
+  const streamState = state;
+  streamState.emittedStart ??= false;
+  streamState.emittedContentStart ??= false;
+  streamState.emittedContentStop ??= false;
+  streamState.emittedMessageStop ??= false;
 
   for (const line of lines) {
     if (!line.startsWith('data:')) continue;
