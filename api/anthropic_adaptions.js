@@ -308,6 +308,8 @@ async function forwardRequest(item, upstream, originalReq) {
       validateStatus: () => true
     });
 
+    console.log(`Forwarded request to ${url} with status ${resp}`);
+
     return resp;
   } catch (err) {
     throw new Error(`Forward request failed: ${err.message}`);
