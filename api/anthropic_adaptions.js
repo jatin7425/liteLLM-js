@@ -468,10 +468,7 @@ export default async function handler(req, res) {
 
         try {
           const resp = await forwardRequest(item, upstreamBase, req);
-          console.log(
-            "Upstream response:",
-            JSON.stringify(resp, null, 2)
-          );
+          console.log("Upstream response data:", resp.data);
 
           if (resp.status >= 200 && resp.status < 500) {
             const rawText = typeof resp.data === 'string' ? resp.data : resp.data?.toString?.() || '';
