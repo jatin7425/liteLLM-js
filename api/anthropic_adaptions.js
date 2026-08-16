@@ -122,12 +122,38 @@ function convertAnthropicToOpenAI(anthropicBody, model) {
         role: msg.role,
         content: msg.content
           .map(c => {
-            if (c.type === 'text') return c.text;
-            if (c.type === 'image') return c.source;
+            if (c.type === 'text') {
+              return {
+                type: 'text',
+                text: c.text
+              };
+            }
+
+            if (c.type === 'image') {
+              if (c.source?.type === 'base64') {
+                return {
+                  type: 'image_url',
+                  image_url: {
+                    url: `data:${c.source.media_type};base64,${c.source.data}`
+                  }
+                };
+              }
+
+              if (c.source?.type === 'url') {
+                return {
+                  type: 'image_url',
+                  image_url: {
+                    url: c.source.url
+                  }
+                };
+              }
+
+              return null;
+            }
+
             return null;
           })
           .filter(Boolean)
-          .join('\n')
       };
     }
     return msg;
@@ -358,7 +384,14 @@ async function forwardRequest(item, upstream, originalReq) {
 
 export default async function handler(req, res) {
   // CORS headers
-  console.log(`Incoming request: ${req}`);
+  console.log('Incoming request:', {
+    method: req.method,
+    url: req.url,
+    contentType: req.headers['content-type'],
+    contentLength: req.headers['content-length'],
+    model: req.body?.model,
+    stream: req.body?.stream
+  });
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader(
@@ -476,7 +509,12 @@ export default async function handler(req, res) {
 
         try {
           const resp = await forwardRequest(item, upstreamBase, req);
-          console.log("Upstream response data:", resp.data);
+          console.log('Upstream response:', {
+            status: resp.status,
+            contentType: resp.headers?.['content-type'],
+            dataType: typeof resp.data,
+            isStream: typeof resp.data?.pipe === 'function'
+          });
 
           if (resp.status >= 200 && resp.status < 500) {
             const rawText = typeof resp.data === 'string' ? resp.data : resp.data?.toString?.() || '';
