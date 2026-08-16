@@ -7,8 +7,8 @@ const app = express();
 const port = Number(process.env.PROXY_PORT || 3001);
 
 app.use(morgan('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 app.get('/openapi.json', (_req, res) => res.json(openapi));
 app.get(['/docs', '/docs/'], (_req, res) => {
   res.type('html').send(`<!doctype html>
