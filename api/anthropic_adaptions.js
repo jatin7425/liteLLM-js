@@ -279,7 +279,8 @@ async function forwardRequest(item, upstream, originalReq) {
   const modelName = originalReq.body?.model || originalReq.query?.model_name;
   const upstreamModel = item.params?.model || item.params?.model_name || modelName || 'openai/gpt-4o-mini';
   const base = upstream || inferApiBaseFromModel(upstreamModel) || 'https://api.openai.com/v1';
-  const url = base.replace(/\/$/, '') + '/v1/chat/completions';
+  const normalizedBase = base.replace(/\/$/, '');
+  const url = `${normalizedBase}/chat/completions`;
 
   const headers = {
     'authorization': `Bearer ${item.apiKey}`,

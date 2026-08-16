@@ -123,9 +123,8 @@ async function forwardRequest(item, forwardPath, originalReq) {
   const base = item.apiBase || inferApiBaseFromModel(item.params.model) || 'https://api.openai.com/v1';
   const normalizedBase = base.replace(/\/$/, '');
   const normalizedPath = '/' + forwardPath.replace(/^\//, '');
-  const url = normalizedBase.endsWith('/v1') && normalizedPath.startsWith('/v1/')
-    ? normalizedBase + normalizedPath.slice(3)
-    : normalizedBase + normalizedPath;
+  const cleanRelativePath = normalizedPath.replace(/^\/v1\//, '/');
+  const url = `${normalizedBase}${cleanRelativePath}`;
   
   const headers = { ...originalReq.headers };
   if (item.apiKey) {
