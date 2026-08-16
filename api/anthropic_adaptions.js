@@ -462,13 +462,16 @@ export default async function handler(req, res) {
         if (!pick) break;
 
         const { item } = pick;
-        console.log(`Forwarding /v1/messages request to upstream model: ${item}`);
+        console.log(`Forwarding /v1/messages request to upstream model: `, JSON.stringify(item, null, 2));
         const upstreamBase = item.apiBase || inferApiBaseFromModel(item.params?.model) || null;
         tried.push({ apiBase: upstreamBase });
 
         try {
           const resp = await forwardRequest(item, upstreamBase, req);
-          console.log(`Upstream response status: ${resp}`);
+          console.log(
+            "Upstream response:",
+            JSON.stringify(resp, null, 2)
+          );
 
           if (resp.status >= 200 && resp.status < 500) {
             const rawText = typeof resp.data === 'string' ? resp.data : resp.data?.toString?.() || '';
