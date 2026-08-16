@@ -172,6 +172,8 @@ export default async function handler(req, res) {
     const cleanPath = req.url ? req.url.split('?')[0] : '';
     const isAllowlisted =
       cleanPath === '/health' ||
+      cleanPath === '/api/hello' ||
+      cleanPath === '/v1/api/hello' ||
       cleanPath.startsWith('/docs') ||
       cleanPath.startsWith('/openai') ||
       cleanPath === '/v1/models';
@@ -198,8 +200,8 @@ export default async function handler(req, res) {
     const pools = buildPools(cfg);
     const cleanPath = req.url ? req.url.split('?')[0] : '';
 
-    if (req.url === '/health') {
-      return res.status(200).json({ ok: true });
+    if (req.url === '/health' || req.url === '/api/hello' || req.url === '/v1/api/hello') {
+      return res.status(200).json({ ok: true, message: 'hello' });
     }
 
     if (cleanPath === '/anthropic/models' || cleanPath.startsWith('/anthropic') || cleanPath.startsWith('/v1/messages')) {
