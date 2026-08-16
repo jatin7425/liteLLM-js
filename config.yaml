@@ -1,0 +1,339 @@
+model_list:
+  # Gemini Pool
+  - model_name: gemini
+    litellm_params:
+      model: gemini/gemini-2.5-flash
+      api_key: os.environ/GEMINI_API_KEY_1
+
+  - model_name: gemini
+    litellm_params:
+      model: gemini/gemini-2.5-flash
+      api_key: os.environ/GEMINI_API_KEY_2
+
+  - model_name: gemini
+    litellm_params:
+      model: gemini/gemini-2.5-flash
+      api_key: os.environ/GEMINI_API_KEY_3
+
+  - model_name: gemini
+    litellm_params:
+      model: gemini/gemini-2.5-flash
+      api_key: os.environ/GEMINI_API_KEY_4
+
+  - model_name: gemini
+    litellm_params:
+      model: gemini/gemini-2.5-flash
+      api_key: os.environ/GEMINI_API_KEY_5
+
+  - model_name: gemini
+    litellm_params:
+      model: gemini/gemini-2.5-flash
+      api_key: os.environ/GEMINI_API_KEY_6
+
+  # Groq Pool
+  - model_name: groq
+    litellm_params:
+      model: groq/llama-3.3-70b-versatile
+      api_key: os.environ/GROQ_API_KEY_1
+
+  - model_name: groq
+    litellm_params:
+      model: groq/llama-3.3-70b-versatile
+      api_key: os.environ/GROQ_API_KEY_2
+
+  - model_name: groq
+    litellm_params:
+      model: groq/llama-3.3-70b-versatile
+      api_key: os.environ/GROQ_API_KEY_3
+
+  - model_name: groq
+    litellm_params:
+      model: groq/llama-3.3-70b-versatile
+      api_key: os.environ/GROQ_API_KEY_4
+
+  - model_name: groq
+    litellm_params:
+      model: groq/llama-3.3-70b-versatile
+      api_key: os.environ/GROQ_API_KEY_5
+
+  - model_name: groq
+    litellm_params:
+      model: groq/llama-3.3-70b-versatile
+      api_key: os.environ/GROQ_API_KEY_6
+
+  - model_name: groq
+    litellm_params:
+      model: groq/llama-3.3-70b-versatile
+      api_key: os.environ/GROQ_API_KEY_7
+
+  - model_name: aion-2.0
+    litellm_params:
+      model: openai/aion-labs/aion-2.0
+      api_base: https://api.aionlabs.ai/v1
+      api_key: os.environ/AION_API_KEY_1
+      rpm: 14 # Replace with their actual free tier RPM
+
+  - model_name: aion-2.0
+    litellm_params:
+      model: openai/aion-labs/aion-2.0
+      api_base: https://api.aionlabs.ai/v1
+      api_key: os.environ/AION_API_KEY_2
+      rpm: 14 # Replace with their actual free tier RPM
+
+  - model_name: aion-2.0
+    litellm_params:
+      model: openai/aion-labs/aion-2.0
+      api_base: https://api.aionlabs.ai/v1
+      api_key: os.environ/AION_API_KEY_3
+      rpm: 14 # Replace with their actual free tier RPM
+
+  - model_name: aion-2.0
+    litellm_params:
+      model: openai/aion-labs/aion-2.0
+      api_base: https://api.aionlabs.ai/v1
+      api_key: os.environ/AION_API_KEY_4
+      rpm: 14 # Replace with their actual free tier RPM
+
+  - model_name: aion-2.0
+    litellm_params:
+      model: openai/aion-labs/aion-2.0
+      api_base: https://api.aionlabs.ai/v1
+      api_key: os.environ/AION_API_KEY_5
+      rpm: 14 # Replace with their actual free tier RPM
+
+  - model_name: aion-2.0
+    litellm_params:
+      model: openai/aion-labs/aion-2.0
+      api_base: https://api.aionlabs.ai/v1
+      api_key: os.environ/AION_API_KEY_6
+      rpm: 14 # Replace with their actual free tier RPM
+
+  - model_name: aion-2.0
+    litellm_params:
+      model: openai/aion-labs/aion-2.0
+      api_base: https://api.aionlabs.ai/v1
+      api_key: os.environ/AION_API_KEY_7
+      rpm: 14 # Replace with their actual free tier RPM
+
+  - model_name: aion-2.0
+    litellm_params:
+      model: openai/aion-labs/aion-2.0
+      api_base: https://api.aionlabs.ai/v1
+      api_key: os.environ/AION_API_KEY_8
+      rpm: 14 # Replace with their actual free tier RPM
+
+  # OpenRouter Pool (free tier, tool-calling capable)
+  - model_name: openrouter
+    litellm_params:
+      model: openrouter/nvidia/nemotron-3-ultra-550b-a55b:free
+      api_base: https://openrouter.ai/api/v1
+      api_key: os.environ/OPEN_ROUTER_API_KEY_1
+      rpm: 20
+
+  # OpenRouter Pool (free tier, tool-calling capable)
+  - model_name: openrouter
+    litellm_params:
+      model: openrouter/nvidia/nemotron-3-ultra-550b-a55b:free
+      api_base: https://openrouter.ai/api/v1
+      api_key: os.environ/OPEN_ROUTER_API_KEY_2
+      rpm: 20
+
+  # OpenRouter Pool (free tier, tool-calling capable)
+  - model_name: openrouter
+    litellm_params:
+      model: openrouter/nvidia/nemotron-3-ultra-550b-a55b:free
+      api_base: https://openrouter.ai/api/v1
+      api_key: os.environ/OPEN_ROUTER_API_KEY_3
+      rpm: 20
+
+  # OpenRouter Pool (free tier, tool-calling capable)
+  - model_name: openrouter
+    litellm_params:
+      model: openrouter/nvidia/nemotron-3-ultra-550b-a55b:free
+      api_base: https://openrouter.ai/api/v1
+      api_key: os.environ/OPEN_ROUTER_API_KEY_4
+      rpm: 20
+
+  # OpenRouter Pool (free tier, tool-calling capable)
+  - model_name: openrouter
+    litellm_params:
+      model: openrouter/nvidia/nemotron-3-ultra-550b-a55b:free
+      api_base: https://openrouter.ai/api/v1
+      api_key: os.environ/OPEN_ROUTER_API_KEY_5
+      rpm: 20
+
+  # OpenRouter Pool (free tier, tool-calling capable)
+  - model_name: openrouter
+    litellm_params:
+      model: openrouter/nvidia/nemotron-3-ultra-550b-a55b:free
+      api_base: https://openrouter.ai/api/v1
+      api_key: os.environ/OPEN_ROUTER_API_KEY_6
+      rpm: 20
+
+  # OpenRouter Pool (free tier, tool-calling capable)
+  - model_name: openrouter
+    litellm_params:
+      model: openrouter/nvidia/nemotron-3-ultra-550b-a55b:free
+      api_base: https://openrouter.ai/api/v1
+      api_key: os.environ/OPEN_ROUTER_API_KEY_7
+      rpm: 20
+
+  - model_name: nvidia
+    litellm_params:
+      model: openai/nvidia/nemotron-3-super-120b-a12b
+      api_base: https://integrate.api.nvidia.com/v1
+      api_key: os.environ/NVIDIA_NIM_API_KEY_1
+      rpm: 40   # NIM free-tier cap
+
+  # NVIDIA NIM Pool — fallback (smaller/older model, likely lower current contention)
+  - model_name: nvidia
+    litellm_params:
+      model: openai/nvidia/llama-3.3-nemotron-super-49b-v1.5
+      api_base: https://integrate.api.nvidia.com/v1
+      api_key: os.environ/NVIDIA_NIM_API_KEY_1
+      rpm: 40
+
+  - model_name: nvidia
+    litellm_params:
+      model: openai/nvidia/nemotron-3-super-120b-a12b
+      api_base: https://integrate.api.nvidia.com/v1
+      api_key: os.environ/NVIDIA_NIM_API_KEY_2
+      rpm: 40   # NIM free-tier cap
+
+  # NVIDIA NIM Pool — fallback (smaller/older model, likely lower current contention)
+  - model_name: nvidia
+    litellm_params:
+      model: openai/nvidia/llama-3.3-nemotron-super-49b-v1.5
+      api_base: https://integrate.api.nvidia.com/v1
+      api_key: os.environ/NVIDIA_NIM_API_KEY_2
+      rpm: 40
+
+  - model_name: nvidia
+    litellm_params:
+      model: openai/nvidia/nemotron-3-super-120b-a12b
+      api_base: https://integrate.api.nvidia.com/v1
+      api_key: os.environ/NVIDIA_NIM_API_KEY_3
+      rpm: 40   # NIM free-tier cap
+
+  # NVIDIA NIM Pool — fallback (smaller/older model, likely lower current contention)
+  - model_name: nvidia
+    litellm_params:
+      model: openai/nvidia/llama-3.3-nemotron-super-49b-v1.5
+      api_base: https://integrate.api.nvidia.com/v1
+      api_key: os.environ/NVIDIA_NIM_API_KEY_3
+      rpm: 40
+
+  - model_name: nvidia
+    litellm_params:
+      model: openai/nvidia/nemotron-3-super-120b-a12b
+      api_base: https://integrate.api.nvidia.com/v1
+      api_key: os.environ/NVIDIA_NIM_API_KEY_4
+      rpm: 40   # NIM free-tier cap
+
+  # NVIDIA NIM Pool — fallback (smaller/older model, likely lower current contention)
+  - model_name: nvidia
+    litellm_params:
+      model: openai/nvidia/llama-3.3-nemotron-super-49b-v1.5
+      api_base: https://integrate.api.nvidia.com/v1
+      api_key: os.environ/NVIDIA_NIM_API_KEY_4
+      rpm: 40
+
+  - model_name: nvidia
+    litellm_params:
+      model: openai/nvidia/nemotron-3-super-120b-a12b
+      api_base: https://integrate.api.nvidia.com/v1
+      api_key: os.environ/NVIDIA_NIM_API_KEY_5
+      rpm: 40   # NIM free-tier cap
+
+  # NVIDIA NIM Pool — fallback (smaller/older model, likely lower current contention)
+  - model_name: nvidia
+    litellm_params:
+      model: openai/nvidia/llama-3.3-nemotron-super-49b-v1.5
+      api_base: https://integrate.api.nvidia.com/v1
+      api_key: os.environ/NVIDIA_NIM_API_KEY_5
+      rpm: 40
+
+  # Embedding model — for RAG project
+  - model_name: embed-gemini
+    litellm_params:
+      model: gemini/gemini-embedding-001
+      api_key: os.environ/GEMINI_API_KEY_1
+
+  - model_name: embed-gemini
+    litellm_params:
+      model: gemini/gemini-embedding-001
+      api_key: os.environ/GEMINI_API_KEY_2
+
+  - model_name: embed-gemini
+    litellm_params:
+      model: gemini/gemini-embedding-001
+      api_key: os.environ/GEMINI_API_KEY_3
+
+  - model_name: embed-gemini
+    litellm_params:
+      model: gemini/gemini-embedding-001
+      api_key: os.environ/GEMINI_API_KEY_4
+
+  - model_name: embed-gemini
+    litellm_params:
+      model: gemini/gemini-embedding-001
+      api_key: os.environ/GEMINI_API_KEY_5
+
+  - model_name: embed-gemini
+    litellm_params:
+      model: gemini/gemini-embedding-001
+      api_key: os.environ/GEMINI_API_KEY_6
+
+  - model_name: embed-cloudflare
+    litellm_params:
+      model: openai/@cf/baai/bge-m3
+      api_base: https://api.cloudflare.com/client/v4/accounts/6ebde4a7292d3b3dde4b09c98291f978/ai/v1
+      api_key: os.environ/CF_API_TOKEN
+
+  - model_name: transcribe-groq
+    litellm_params:
+      model: groq/whisper-large-v3-turbo
+      api_key: os.environ/GROQ_API_KEY_1
+      rpm: 20
+
+  - model_name: transcribe-groq
+    litellm_params:
+      model: groq/whisper-large-v3-turbo
+      api_key: os.environ/GROQ_API_KEY_2
+      rpm: 20
+
+  - model_name: transcribe-groq
+    litellm_params:
+      model: groq/whisper-large-v3-turbo
+      api_key: os.environ/GROQ_API_KEY_3
+      rpm: 20
+
+  - model_name: transcribe-groq
+    litellm_params:
+      model: groq/whisper-large-v3-turbo
+      api_key: os.environ/GROQ_API_KEY_4
+      rpm: 20
+
+  - model_name: transcribe-groq
+    litellm_params:
+      model: groq/whisper-large-v3-turbo
+      api_key: os.environ/GROQ_API_KEY_5
+      rpm: 20
+
+  - model_name: transcribe-groq
+    litellm_params:
+      model: groq/whisper-large-v3-turbo
+      api_key: os.environ/GROQ_API_KEY_6
+      rpm: 20
+
+  - model_name: transcribe-groq
+    litellm_params:
+      model: groq/whisper-large-v3-turbo
+      api_key: os.environ/GROQ_API_KEY_7
+      rpm: 20
+
+litellm_settings:
+  drop_params: true
+  
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
