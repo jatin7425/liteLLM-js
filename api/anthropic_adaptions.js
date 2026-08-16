@@ -112,23 +112,18 @@ function modelForUpstream(model) {
  */
 function convertAnthropicToOpenAI(anthropicBody, model) {
   const messages = anthropicBody.messages || [];
-  const validTools = Array.isArray(anthropicBody.tools)
-    ? anthropicBody.tools.filter(tool => tool && Object.keys(tool).length > 0)
-    : undefined;
-
-  // Convert Anthropic format to OpenAI format
+  
   const convertedMessages = messages.map(msg => {
     if (msg.content && typeof msg.content === 'string') {
       return msg;
     }
-    // Handle Anthropic's content array format
     if (Array.isArray(msg.content)) {
       return {
         role: msg.role,
         content: msg.content
           .map(c => {
             if (c.type === 'text') return c.text;
-            if (c.type === 'image') return c.source; // Keep image data
+            if (c.type === 'image') return c.source;
             return null;
           })
           .filter(Boolean)
@@ -138,6 +133,19 @@ function convertAnthropicToOpenAI(anthropicBody, model) {
     return msg;
   });
 
+  // Convert tools if present
+  let tools = undefined;
+  if (anthropicBody.tools && Array.isArray(anthropicBody.tools)) {
+    tools = anthropicBody.tools.map(tool => ({
+      type: 'function',
+      function: {
+        name: tool.name,
+        description: tool.description || '',
+        parameters: tool.input_schema || {}
+      }
+    }));
+  }
+
   return {
     model: modelForUpstream(model),
     messages: convertedMessages,
@@ -145,8 +153,8 @@ function convertAnthropicToOpenAI(anthropicBody, model) {
     temperature: anthropicBody.temperature,
     top_p: anthropicBody.top_p,
     stream: anthropicBody.stream || false,
-    tools: validTools && validTools.length ? validTools : undefined,
-    tool_choice: validTools && validTools.length ? anthropicBody.tool_choice : undefined
+    ...(tools ? { tools } : {}),  // Only include if present
+    tool_choice: anthropicBody.tool_choice
   };
 }
 
