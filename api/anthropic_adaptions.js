@@ -276,8 +276,9 @@ export function convertOpenAIStreamChunkToAnthropicEvents(chunkText, model, mess
 }
 
 async function forwardRequest(item, upstream, originalReq) {
-  const modelName = originalReq.body?.model;
-  const base = upstream || inferApiBaseFromModel(item.params.model) || 'https://api.openai.com/v1';
+  const modelName = originalReq.body?.model || originalReq.query?.model_name;
+  const upstreamModel = item.params?.model || item.params?.model_name || modelName || 'openai/gpt-4o-mini';
+  const base = upstream || inferApiBaseFromModel(upstreamModel) || 'https://api.openai.com/v1';
   const url = base.replace(/\/$/, '') + '/v1/chat/completions';
 
   const headers = {
@@ -292,7 +293,7 @@ async function forwardRequest(item, upstream, originalReq) {
     delete headers['authorization'];
   }
 
-  const openaiBody = convertAnthropicToOpenAI(originalReq.body, modelName);
+  const openaiBody = convertAnthropicToOpenAI(originalReq.body, upstreamModel);
 
   try {
     const resp = await axios({
@@ -422,7 +423,7 @@ export default async function handler(req, res) {
         tried.push({ apiBase: item.apiBase || null });
 
         try {
-          const resp = await forwardRequest(item, item.apiBase, req);
+          const resp = await forwardRequest(item, item.apiBase || inferApiBaseFromModel(item.params?.model), req);
 
           if (resp.status >= 200 && resp.status < 500) {
             // Handle streaming
