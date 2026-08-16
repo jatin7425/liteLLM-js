@@ -182,6 +182,86 @@ function convertOpenAIToAnthropic(openaiResponse, model) {
   };
 }
 
+export function convertOpenAIStreamChunkToAnthropicEvents(chunkText, model, messageId) {
+  const events = [];
+  const rawText = typeof chunkText === 'string' ? chunkText : chunkText.toString();
+  const lines = rawText.split('\n').map(line => line.trim()).filter(Boolean);
+  let emittedStart = false;
+
+  for (const line of lines) {
+    if (!line.startsWith('data:')) continue;
+
+    const payloadText = line.slice(5).trim();
+    if (!payloadText || payloadText === '[DONE]') continue;
+
+    let payload;
+    try {
+      payload = JSON.parse(payloadText);
+    } catch (err) {
+      continue;
+    }
+
+    const choice = payload.choices?.[0];
+    if (!choice) continue;
+
+    if (!emittedStart) {
+      emittedStart = true;
+      events.push({
+        event: 'message_start',
+        data: {
+          type: 'message_start',
+          message: {
+            id: payload.id || messageId || `msg_${Date.now()}`,
+            type: 'message',
+            role: 'assistant',
+            content: [],
+            model,
+            stop_reason: null,
+            stop_sequence: null,
+            usage: {
+              input_tokens: 0,
+              output_tokens: 0
+            }
+          }
+        }
+      });
+    }
+
+    const delta = choice.delta || {};
+    if (typeof delta.content === 'string' && delta.content.length > 0) {
+      events.push({
+        event: 'content_block_delta',
+        data: {
+          type: 'content_block_delta',
+          index: 0,
+          delta: {
+            type: 'text_delta',
+            text: delta.content
+          }
+        }
+      });
+    }
+
+    if (choice.finish_reason) {
+      const stopReason = choice.finish_reason === 'tool_calls' ? 'tool_use' : choice.finish_reason;
+      events.push({
+        event: 'message_delta',
+        data: {
+          type: 'message_delta',
+          delta: { stop_reason: stopReason },
+          usage: { output_tokens: 0 }
+        }
+      });
+      events.push({
+        event: 'message_stop',
+        data: { type: 'message_stop' }
+      });
+    }
+  }
+
+  return events;
+}
+
 async function forwardRequest(item, upstream, originalReq) {
   const modelName = originalReq.body?.model;
   const url = upstream.replace(/\/$/, '') + '/v1/chat/completions';
@@ -338,26 +418,15 @@ export default async function handler(req, res) {
               res.setHeader('Cache-Control', 'no-cache');
               res.setHeader('Connection', 'keep-alive');
 
+              let sawMessageStop = false;
+              const streamMessageId = `msg_${Date.now()}`;
+
               resp.data.on('data', chunk => {
-                const text = chunk.toString();
-                // Pass through SSE events
-                if (text.includes('data:')) {
-                  try {
-                    const jsonStr = text
-                      .split('\n')
-                      .find(line => line.startsWith('data:'))
-                      ?.slice(5)
-                      .trim();
-                    if (jsonStr && jsonStr !== '[DONE]') {
-                      const parsed = JSON.parse(jsonStr);
-                      // Convert if needed
-                      res.write(
-                        `data: ${JSON.stringify(parsed)}\n\n`
-                      );
-                    }
-                  } catch (e) {
-                    res.write(text);
-                  }
+                const events = convertOpenAIStreamChunkToAnthropicEvents(chunk, modelName, streamMessageId);
+                for (const event of events) {
+                  if (event.event === 'message_stop') sawMessageStop = true;
+                  res.write(`event: ${event.event}\n`);
+                  res.write(`data: ${JSON.stringify(event.data)}\n\n`);
                 }
               });
 
@@ -367,7 +436,10 @@ export default async function handler(req, res) {
               });
 
               resp.data.on('end', () => {
-                res.write('data: [DONE]\n\n');
+                if (!sawMessageStop) {
+                  res.write('event: message_stop\n');
+                  res.write('data: {"type":"message_stop"}\n\n');
+                }
                 res.end();
               });
 
