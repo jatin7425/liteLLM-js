@@ -392,14 +392,12 @@ export default async function handler(req, res) {
 
     // === /v1/messages endpoint (Anthropic format) ===
     if (req.url?.startsWith('/v1/messages')) {
-      const receivedModel = req.body?.model || req.query?.model || 'nvidia';
-      if (Object.keys(pools).includes(receivedModel)) {
-        let modelName = receivedModel;
-      } else {
-        let modelName = 'nvidia';
-      }
+      const requestedModel = req.body?.model || req.query?.model;
+      const modelName = Object.keys(pools).includes(requestedModel)
+        ? requestedModel
+        : 'nvidia';
 
-      if (!req.body?.model && !req.query?.model) {
+      if (!requestedModel) {
         console.warn('No model provided for /v1/messages; defaulting to nvidia');
       }
 
