@@ -175,8 +175,6 @@ export default async function handler(req, res) {
       cleanPath === '/health' ||
       cleanPath.startsWith('/docs') ||
       cleanPath.startsWith('/openai') ||
-      cleanPath.startsWith('/anthropic') ||
-      cleanPath.startsWith('/v1/messages') ||
       cleanPath === '/v1/models';
     if (!isAllowlisted) {
       if (!masterKey) {
