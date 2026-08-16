@@ -91,6 +91,16 @@ function pickProvider(pool) {
   return null;
 }
 
+function inferApiBaseFromModel(model) {
+  if (!model) return null;
+  if (model.startsWith('gemini/')) return 'https://generativelanguage.googleapis.com/v1beta/openai';
+  if (model.startsWith('groq/')) return 'https://api.groq.com/openai/v1';
+  if (model.startsWith('openrouter/')) return 'https://openrouter.ai/api/v1';
+  if (model.startsWith('nvidia/') || model.includes('nvidia')) return 'https://integrate.api.nvidia.com/v1';
+  if (model.includes('@cf/')) return null;
+  return 'https://api.openai.com/v1';
+}
+
 function modelForUpstream(model) {
   // Remove provider prefix (e.g., "claude-3-5-sonnet-20241022")
   return model.replace(/^(claude|gemini|groq|openrouter|openai|nvidia)\//, '');
@@ -102,7 +112,10 @@ function modelForUpstream(model) {
  */
 function convertAnthropicToOpenAI(anthropicBody, model) {
   const messages = anthropicBody.messages || [];
-  
+  const validTools = Array.isArray(anthropicBody.tools)
+    ? anthropicBody.tools.filter(tool => tool && Object.keys(tool).length > 0)
+    : undefined;
+
   // Convert Anthropic format to OpenAI format
   const convertedMessages = messages.map(msg => {
     if (msg.content && typeof msg.content === 'string') {
@@ -132,8 +145,8 @@ function convertAnthropicToOpenAI(anthropicBody, model) {
     temperature: anthropicBody.temperature,
     top_p: anthropicBody.top_p,
     stream: anthropicBody.stream || false,
-    tools: anthropicBody.tools,
-    tool_choice: anthropicBody.tool_choice
+    tools: validTools && validTools.length ? validTools : undefined,
+    tool_choice: validTools && validTools.length ? anthropicBody.tool_choice : undefined
   };
 }
 
@@ -264,7 +277,8 @@ export function convertOpenAIStreamChunkToAnthropicEvents(chunkText, model, mess
 
 async function forwardRequest(item, upstream, originalReq) {
   const modelName = originalReq.body?.model;
-  const url = upstream.replace(/\/$/, '') + '/v1/chat/completions';
+  const base = upstream || inferApiBaseFromModel(item.params.model) || 'https://api.openai.com/v1';
+  const url = base.replace(/\/$/, '') + '/v1/chat/completions';
 
   const headers = {
     'authorization': `Bearer ${item.apiKey}`,
