@@ -80,7 +80,7 @@ export default {
       post: {
         summary: 'Anthropic-compatible message completion',
         description: 'Claude Code friendly endpoint that accepts Anthropic-style messages and converts them to the configured upstream model pool.',
-        security: [],
+        security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
           content: {
