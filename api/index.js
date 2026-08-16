@@ -164,6 +164,31 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
+  // Authorization: protect most routes with master_key bearer token
+  try {
+    const cfg = loadConfig();
+    const masterKey = resolveApiKey(cfg.general_settings && cfg.general_settings.master_key);
+    // allowlist: health, docs, and openai-prefixed paths
+    const cleanPath = req.url ? req.url.split('?')[0] : '';
+    const isAllowlisted = cleanPath === '/health' || cleanPath.startsWith('/docs') || cleanPath.startsWith('/openai');
+    if (!isAllowlisted) {
+      if (!masterKey) {
+        return res.status(500).json({ error: 'server misconfigured: master_key not set' });
+      }
+      const auth = req.headers['authorization'] || req.headers['Authorization'];
+      if (!auth || !auth.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'missing bearer token' });
+      }
+      const token = auth.slice(7).trim();
+      if (token !== masterKey) {
+        return res.status(403).json({ error: 'forbidden' });
+      }
+    }
+  } catch (err) {
+    console.error('Auth check error:', err);
+    return res.status(500).json({ error: 'auth setup error' });
+  }
+
   try {
     const cfg = loadConfig();
     const pools = buildPools(cfg);
