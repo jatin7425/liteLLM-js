@@ -16,9 +16,7 @@
     "js-yaml": "^4.1.0",
     "morgan": "^1.10.0"
   },
-  "devDependencies": {
-    "vercel": "^latest"
-  },
+  "devDependencies": {},
   "engines": {
     "node": "24.x"
   }
