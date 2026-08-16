@@ -320,6 +320,7 @@ async function forwardRequest(item, upstream, originalReq) {
 
 export default async function handler(req, res) {
   // CORS headers
+  console.log(`Incoming request: ${req}`);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader(
@@ -356,7 +357,7 @@ export default async function handler(req, res) {
       console.log(`Auth header: ${auth}`);
       if (!auth || !auth.startsWith('Bearer ')) {
         return res.status(401).json({
-          error: { message: 'missing bearer token' }
+          error: { message: 'missing bearer token', request_response: req }
         });
       }
 
