@@ -28,7 +28,7 @@ function resolveApiKey(maybeEnv) {
   if (!maybeEnv) return null;
   if (typeof maybeEnv !== 'string') return maybeEnv;
   if (maybeEnv.startsWith('os.environ/')) {
-    const varName = maybeEnv.split('/')[1];
+    const varName = maybeEnv.split('/')[-1];
     return process.env[varName] || null;
   }
   return maybeEnv;
@@ -294,6 +294,8 @@ async function forwardRequest(item, upstream, originalReq) {
     delete headers['authorization'];
   }
 
+  console.log(`Forwarding request to ${url} with model ${upstreamModel} key ${item.apiKey}`);
+
   const openaiBody = convertAnthropicToOpenAI(originalReq.body, upstreamModel);
 
   try {
@@ -421,6 +423,7 @@ export default async function handler(req, res) {
         if (!pick) break;
 
         const { item } = pick;
+        console.log(`Forwarding /v1/messages request to upstream model: ${item}`);
         const upstreamBase = item.apiBase || inferApiBaseFromModel(item.params?.model) || null;
         tried.push({ apiBase: upstreamBase });
 
