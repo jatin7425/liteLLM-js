@@ -21,7 +21,7 @@ export default {
     },
     '/pools': {
       get: {
-        security: [],
+        security: [{ bearerAuth: [] }],
         summary: 'List provider pools',
         responses: { 200: { description: 'Configured pool names' } }
       }
@@ -100,7 +100,7 @@ export default {
     '/anthropic/models': {
       get: {
         summary: 'List Anthropic-compatible models',
-        security: [],
+        security: [{ bearerAuth: [] }],
         responses: {
           200: { description: 'Available model names for Claude Code discovery' }
         }
