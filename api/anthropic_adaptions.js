@@ -372,9 +372,9 @@ export default async function handler(req, res) {
       }
     }
   } catch (err) {
-    console.error('Auth check error:', err);
+    console.error('Auth check error:', err, req);
     return res.status(500).json({
-      error: { message: 'auth setup error' }
+      error: { message: 'auth setup error', request_response: req }
     });
   }
 
