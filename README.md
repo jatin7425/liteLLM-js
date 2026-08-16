@@ -135,6 +135,18 @@ const response = await axios.post(
 );
 ```
 
+### Claude Code / Anthropic-compatible clients
+```bash
+export ANTHROPIC_API_KEY=unused
+export ANTHROPIC_BASE_URL=https://your-project.vercel.app
+```
+
+Anthropic-style clients can now call:
+- `POST https://your-project.vercel.app/v1/messages`
+- `GET https://your-project.vercel.app/anthropic/models`
+
+Use `model` values like `groq`, `gemini`, or your configured pool name.
+
 ## Configuration
 
 Edit `config.yaml` to:

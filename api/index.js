@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
 import axios from 'axios';
+import anthropicHandler from './anthropic_adaptions.js';
 
 let cachedConfig = null;
 let cachedPools = null;
@@ -170,7 +171,13 @@ export default async function handler(req, res) {
     const masterKey = resolveApiKey(cfg.general_settings && cfg.general_settings.master_key);
     // allowlist: health, docs, and openai-prefixed paths
     const cleanPath = req.url ? req.url.split('?')[0] : '';
-    const isAllowlisted = cleanPath === '/health' || cleanPath.startsWith('/docs') || cleanPath.startsWith('/openai');
+    const isAllowlisted =
+      cleanPath === '/health' ||
+      cleanPath.startsWith('/docs') ||
+      cleanPath.startsWith('/openai') ||
+      cleanPath.startsWith('/anthropic') ||
+      cleanPath.startsWith('/v1/messages') ||
+      cleanPath === '/v1/models';
     if (!isAllowlisted) {
       if (!masterKey) {
         return res.status(500).json({ error: 'server misconfigured: master_key not set' });
@@ -192,9 +199,14 @@ export default async function handler(req, res) {
   try {
     const cfg = loadConfig();
     const pools = buildPools(cfg);
+    const cleanPath = req.url ? req.url.split('?')[0] : '';
 
     if (req.url === '/health') {
       return res.status(200).json({ ok: true });
+    }
+
+    if (cleanPath === '/anthropic/models' || cleanPath.startsWith('/anthropic') || cleanPath.startsWith('/v1/messages')) {
+      return anthropicHandler(req, res);
     }
 
     if (req.url === '/pools') {

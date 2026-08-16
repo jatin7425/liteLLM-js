@@ -73,6 +73,15 @@ async function main() {
     console.log(`    Response status: ${res.status}`);
   });
 
+  await test('Anthropic compatibility endpoints are exposed', async () => {
+    const res = await axios.get(`${BASE_URL}/anthropic/models`, {
+      validateStatus: () => true
+    });
+    console.log(`    Response status: ${res.status}`);
+    if (res.status !== 200) throw new Error(`Expected 200, got ${res.status}: ${JSON.stringify(res.data)}`);
+    if (!Array.isArray(res.data?.data)) throw new Error('Expected model list payload');
+  });
+
   await test('Missing model_name returns 400', async () => {
     try {
       await axios.post(`${BASE_URL}/v1/chat/completions`, {

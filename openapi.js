@@ -75,6 +75,36 @@ export default {
         },
         responses: { 200: { description: 'Transcription response' } }
       }
+    },
+    '/v1/messages': {
+      post: {
+        summary: 'Anthropic-compatible message completion',
+        description: 'Claude Code friendly endpoint that accepts Anthropic-style messages and converts them to the configured upstream model pool.',
+        security: [],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/AnthropicMessagesRequest' }
+            }
+          }
+        },
+        responses: {
+          200: { description: 'Anthropic-formatted message response' },
+          400: { description: 'Invalid request payload' },
+          404: { description: 'Model pool not found' },
+          502: { description: 'No healthy upstream available' }
+        }
+      }
+    },
+    '/anthropic/models': {
+      get: {
+        summary: 'List Anthropic-compatible models',
+        security: [],
+        responses: {
+          200: { description: 'Available model names for Claude Code discovery' }
+        }
+      }
     }
   },
   components: {
@@ -117,6 +147,42 @@ export default {
           },
           stream: { type: 'boolean', default: false, example: false },
           max_tokens: { type: 'integer', minimum: 1, example: 256 }
+        }
+      },
+      AnthropicMessagesRequest: {
+        type: 'object',
+        required: ['model', 'messages', 'max_tokens'],
+        properties: {
+          model: { type: 'string', example: 'groq' },
+          messages: {
+            type: 'array',
+            items: {
+              type: 'object',
+              required: ['role', 'content'],
+              properties: {
+                role: { type: 'string', enum: ['user', 'assistant'] },
+                content: {
+                  oneOf: [
+                    { type: 'string' },
+                    {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          type: { type: 'string' },
+                          text: { type: 'string' }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          max_tokens: { type: 'integer', minimum: 1, example: 256 },
+          temperature: { type: 'number', example: 0.7 },
+          stream: { type: 'boolean', default: false, example: false },
+          tools: { type: 'array', items: { type: 'object' } }
         }
       },
       EmbeddingRequest: {
