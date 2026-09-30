@@ -19,6 +19,12 @@ export default {
         responses: { 200: { description: 'Proxy is available' } }
       }
     },
+    '/v1/models': {
+      get: {
+        security: [{ bearerAuth: [] }],
+        summary: 'List provider pools',
+        responses: { 200: { description: 'Configured pool names' } }
+    },
     '/pools': {
       get: {
         security: [{ bearerAuth: [] }],
