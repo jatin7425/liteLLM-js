@@ -213,7 +213,7 @@ export default async function handler(req, res) {
       return anthropicHandler(req, res);
     }
 
-    if (req.url === '/pools') {
+    if (req.url === '/pools' || req.url === '/v1/models') {
       return res.status(200).json({ model_names: Object.keys(pools) });
     }
 
