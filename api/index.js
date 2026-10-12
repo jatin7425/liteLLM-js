@@ -1,3 +1,4 @@
+import { modelId, poolCatalog, addAliases } from './model_pools.js';
 import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
@@ -42,7 +43,7 @@ function buildPools(cfg) {
   const list = cfg.model_list || [];
   
   for (const entry of list) {
-    const name = entry.model_name;
+    const name = modelId(entry);
     if (!pools[name]) pools[name] = { items: [], rr: 0 };
     
     const params = entry.litellm_params || {};
@@ -60,6 +61,7 @@ function buildPools(cfg) {
     });
   }
   
+  addAliases(pools, cfg);
   cachedPools = pools;
   return pools;
 }
@@ -214,7 +216,7 @@ export default async function handler(req, res) {
     }
 
     if (req.url === '/pools' || req.url === '/v1/models') {
-      return res.status(200).json({ model_names: Object.keys(pools) });
+      return res.status(200).json({ model_names: Object.keys(pools), data: poolCatalog(cfg) });
     }
 
     const requestUrl = new URL(req.url, 'http://localhost');
@@ -241,7 +243,10 @@ export default async function handler(req, res) {
 
     for (let attempt = 0; attempt < pool.items.length; attempt++) {
       const pick = pickProvider(pool);
-      if (!pick) break;
+      if (!pick) {
+        res.setHeader('Retry-After', '60');
+        return res.status(429).json({ error: { code: 'provider_limit', message: 'This model pool has reached its per-minute limit.', retry_after_seconds: 60, model: modelName } });
+      }
 
       const { item, idx } = pick;
       tried.push({ idx, apiBase: item.apiBase || null });

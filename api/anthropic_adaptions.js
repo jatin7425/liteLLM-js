@@ -1,3 +1,4 @@
+import { modelId, poolCatalog, addAliases } from './model_pools.js';
 import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
@@ -41,7 +42,7 @@ function buildPools(cfg) {
   const list = cfg.model_list || [];
   
   for (const entry of list) {
-    const name = entry.model_name;
+    const name = modelId(entry);
     if (!pools[name]) pools[name] = { items: [], rr: 0 };
     
     const params = entry.litellm_params || {};
@@ -59,6 +60,7 @@ function buildPools(cfg) {
     });
   }
   
+  addAliases(pools, cfg);
   cachedPools = pools;
   return pools;
 }
@@ -465,21 +467,14 @@ export default async function handler(req, res) {
     if (req.url === '/anthropic/models') {
       return res.status(200).json({
         object: 'list',
-        data: Object.keys(pools).map(name => ({
-          id: name,
-          object: 'model',
-          created: Math.floor(Date.now() / 1000),
-          owned_by: 'anthropic'
-        }))
+        data: poolCatalog(cfg).filter(model => model.mode === 'chat')
       });
     }
 
     // === /v1/messages endpoint (Anthropic format) ===
     if (req.url?.startsWith('/v1/messages')) {
       const requestedModel = req.body?.model || req.query?.model;
-      const modelName = Object.keys(pools).includes(requestedModel)
-        ? requestedModel
-        : 'nvidia';
+      const modelName = requestedModel || 'nvidia';
 
       if (!requestedModel) {
         console.warn('No model provided for /v1/messages; defaulting to nvidia');

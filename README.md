@@ -195,3 +195,29 @@ MIT
 ## Support
 
 See `DEPLOY.md` for detailed deployment guide.
+
+## Model names and compatibility
+
+Pool names now match the upstream model identifier (without the gateway provider prefix). `GET /v1/models` and `/pools` return the canonical `model_names` and an OpenAI-style `data` catalog with `mode` values `chat`, `embedding`, or `transcription`. Non-chat models must not be offered in a chat model picker.
+
+| Previous alias | Canonical pool |
+| --- | --- |
+| gemini | gemini-3.5-flash |
+| groq | openai/gpt-oss-120b |
+| aion-2.0 | aion-labs/aion-2.0 |
+| openrouter | nvidia/nemotron-3-ultra-550b-a55b:free |
+| nvidia | nvidia/nemotron-3-super-120b-a12b and nvidia/nemotron-3-nano-30b-a3b |
+| embed-gemini | gemini-embedding-001 |
+| embed-cloudflare | @cf/baai/bge-m3 |
+| transcribe-groq | whisper-large-v3-turbo |
+
+Legacy aliases remain accepted for existing clients and saved conversations but are excluded from the model catalog. The legacy NVIDIA alias retains both model entries; the explicit canonical names select Super or Nano. API keys remain server-side environment variables.
+
+This normalization also works when `LITELLM_CONFIG_JSON` still contains the previous config structure. No environment-secret values need to change. Pool RPM exhaustion returns HTTP 429 with `Retry-After: 60`; provider quota-reset times are not inferred.
+
+Run the local fixture checks with:
+
+```bash
+npm ci
+node --test tests/model-pools.test.mjs
+```
