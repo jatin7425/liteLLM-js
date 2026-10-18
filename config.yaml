@@ -42,6 +42,13 @@ model_list:
       model: gemini/gemini-3.5-flash
       api_key: os.environ/GEMINI_API_KEY_6
 
+  - model_name: gemini-3.5-flash
+    legacy_names: [gemini]
+    mode: chat
+    litellm_params:
+      model: gemini/gemini-3.5-flash
+      api_key: os.environ/GEMINI_API_KEY_7
+
   # Groq Pool — migrated from llama-3.3-70b-versatile (retired Aug 16, 2026) to gpt-oss-120b
   - model_name: openai/gpt-oss-120b
     legacy_names: [groq]
